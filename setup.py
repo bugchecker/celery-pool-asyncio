@@ -45,7 +45,6 @@ setup(
     packages=find_packages(),
     setup_requires=setup_requirements,
     test_suite='tests',
-    #tests_require=test_requirements,
     url='https://github.com/kai3341/celery-pool-asyncio',
     version='0.2.0',
     zip_safe=True,

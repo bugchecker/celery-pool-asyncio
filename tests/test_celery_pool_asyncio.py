@@ -46,7 +46,7 @@ def celery_config():
 @pytest.fixture(scope='session')
 def celery_includes():
     return [
-        'tests.test_celery_pool_asyncio',
+        'test_celery_pool_asyncio',
     ]
 
 

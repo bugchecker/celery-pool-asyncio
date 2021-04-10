@@ -13,5 +13,6 @@ twine
 future
 
 pytest
+pytest-celery
 pytest-cov
 pytest-runner

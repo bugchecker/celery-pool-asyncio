@@ -1,6 +1,7 @@
 import os
 import logging
 import asyncio
+import time
 
 
 from celery import canvas
@@ -59,7 +60,7 @@ def build_async_tracer(
     eager=False,
     propagate=False,
     app=None,
-    monotonic=trace.monotonic,
+    monotonic=time.monotonic,
     trace_ok_t=trace.trace_ok_t,
     IGNORE_STATES=trace.IGNORE_STATES,
 ):
