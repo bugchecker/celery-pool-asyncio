@@ -172,7 +172,7 @@ class TaskPool(base.BasePool):
         try:
             accept_callback and accept_callback(
                 base.os.getpid(),
-                base.monotonic(),
+                time.monotonic(),
             )
 
             trace_ok_coro = coro_function.__trace__(
@@ -184,7 +184,7 @@ class TaskPool(base.BasePool):
 
             try:
                 retval = await asyncio.wait_for(trace_ok_coro, timeout)
-                callback and callback((0, retval, base.monotonic()))
+                callback and callback((0, retval, time.monotonic()))
             except asyncio.TimeoutError:
                 timeout_callback and timeout_callback(
                     soft_timeout,
@@ -198,7 +198,7 @@ class TaskPool(base.BasePool):
             EI = ExceptionInfo((type_, reason, tb))
             error_callback and error_callback(
                 EI,
-                base.monotonic(),
+                time.monotonic(),
             )
 
         finally:

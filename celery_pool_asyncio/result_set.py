@@ -1,3 +1,5 @@
+import time
+
 async def join(self, timeout=None, propagate=True, interval=0.5,
          callback=None, no_ack=True, on_message=None,
          disable_sync_subtasks=True, on_interval=None):
@@ -47,7 +49,7 @@ async def join(self, timeout=None, propagate=True, interval=0.5,
     """
     if disable_sync_subtasks:
         assert_will_not_block()
-    time_start = monotonic()
+    time_start = time.monotonic()
     remaining = None
 
     if on_message is not None:
@@ -58,7 +60,7 @@ async def join(self, timeout=None, propagate=True, interval=0.5,
     for result in self.results:
         remaining = None
         if timeout:
-            remaining = timeout - (monotonic() - time_start)
+            remaining = timeout - (time.monotonic() - time_start)
             if remaining <= 0.0:
                 raise TimeoutError('join operation timed out')
         value = await result.get(

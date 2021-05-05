@@ -1,4 +1,6 @@
 import socket
+import time
+
 import celery.backends.asynchronous as asynchronous
 
 
@@ -8,18 +10,19 @@ class asyncioDrainer(asynchronous.Drainer):
         self,
         p,
         timeout=None,
+        interval=1,
         on_interval=None,
         wait=None,
     ):
         wait = wait or self.result_consumer.drain_events
-        time_start = asynchronous.monotonic()
+        time_start = time.monotonic()
 
         while 1:
             # Total time spent may exceed a single call to wait()
-            if timeout and asynchronous.monotonic() - time_start >= timeout:
+            if timeout and time.monotonic() - time_start >= timeout:
                 raise socket.timeout()
             try:
-                yield await self.wait_for(p, wait, timeout=1)
+                yield await self.wait_for(p, wait, timeout=interval)
             except socket.timeout:
                 pass
             if on_interval:

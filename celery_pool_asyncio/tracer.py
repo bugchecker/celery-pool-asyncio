@@ -49,6 +49,19 @@ pop_task = _task_stack.pop
 
 signature = canvas.maybe_signature  # maybe_ does not clone if already
 
+has_traceback_clear = getattr(trace, 'traceback_clear')
+has_signal_internal_error = getattr(trace, '_signal_internal_error')
+
+
+def traceback_clear(exc=None):
+    if has_traceback_clear:
+        trace.traceback_clear(exc)
+
+
+def _signal_internal_error(*args, **kwargs):
+    if has_signal_internal_error:
+        _signal_internal_error(*args, **kwargs)
+
 
 def build_async_tracer(
     name,
@@ -212,6 +225,7 @@ def build_async_tracer(
                         exc = CeleryTimeoutError(exc)
                         exc = str(exc)
                         I, R, state, retval = on_error(task_request, exc, uuid)
+                        traceback_clear(exc)
 
                     except SoftRevoked:
                         R = retval = await coro_utils.send_exception(
@@ -233,20 +247,25 @@ def build_async_tracer(
                     R = ExceptionInfo(internal=True)
                     state, retval = I.state, I.retval
                     I.handle_reject(task, task_request)
+                    traceback_clear(exc)
                 except Ignore as exc:
                     I = Info(IGNORED, exc)
                     R = ExceptionInfo(internal=True)
                     state, retval = I.state, I.retval
                     I.handle_ignore(task, task_request)
+                    traceback_clear(exc)
                 except Retry as exc:
                     I, R, state, retval = on_error(
                         task_request, exc, uuid, RETRY, call_errbacks=False)
+                    traceback_clear(exc)
                 except SoftTimeLimitExceeded as exc:
                     I, R, state, retval = on_error(task_request, exc, uuid)
+                    traceback_clear(exc)
                 except Exception as exc:
                     coro.close()
                     await coro_utils.await_anyway(waiter_task)
                     I, R, state, retval = on_error(task_request, exc, uuid)
+                    traceback_clear(exc)
                 except BaseException:
                     raise
                 else:
@@ -344,6 +363,7 @@ def build_async_tracer(
         except MemoryError:
             raise
         except Exception as exc:
+            _signal_internal_error(task, uuid, args, kwargs, request, exc)
             if eager:
                 raise
             R = trace.report_internal_error(task, exc)
