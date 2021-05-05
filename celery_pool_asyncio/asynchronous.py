@@ -1,4 +1,12 @@
+import asyncio
 import socket
+
+from celery.worker import worker as cwworker
+from concurrent.futures import ThreadPoolExecutor
+
+from .pool import pool
+
+drain_events_pool_executor = ThreadPoolExecutor()
 
 
 async def _wait_for_pending(
@@ -42,3 +50,15 @@ async def drain_events_until(self, p, timeout=None, on_interval=None):
         on_interval=on_interval,
     ):
         yield
+
+
+def asyncio_drain_events_wrapper(fn):
+    loop = asyncio.get_event_loop() if pool is None else pool.loop
+    async def asyncio_drain_events(self, timeout=None):
+        yield await loop.run_in_executor(
+            drain_events_pool_executor,
+            fn,
+            self, timeout
+        )
+    return asyncio_drain_events
+

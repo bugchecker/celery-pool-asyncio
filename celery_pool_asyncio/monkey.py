@@ -45,6 +45,24 @@ if monkey_available('BASERESULTCONSUMER.WAIT_FOR_PENDING'):
 if monkey_available('BASERESULTCONSUMER.DRAIN_EVENTS_UNTIL'):
     BaseResultConsumer.drain_events_until = asynchronous.drain_events_until
 
+
+from celery.backends.redis import ResultConsumer as RedisResultConsumer
+
+if monkey_available('REDISRESULTCONSUMER.DRAIN_EVENTS'):
+    RedisResultConsumer.drain_events = \
+        asynchronous.asyncio_drain_events_wrapper(
+            RedisResultConsumer.drain_events
+        )
+
+
+from celery.backends.rpc import ResultConsumer as RpcResultConsumer
+
+if monkey_available('RPCRESULTCONSUMER.DRAIN_EVENTS'):
+    RpcResultConsumer.drain_events = \
+        asynchronous.asyncio_drain_events_wrapper(
+            RpcResultConsumer.drain_events
+        )
+
 # --- celery.backends.asynchronous.AsyncBackendMixin
 from celery.backends.asynchronous import AsyncBackendMixin
 
